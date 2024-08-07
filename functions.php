@@ -1,3 +1,4 @@
+<?php
 // 2024,08,06
 function add_custom_user_role() {
 	add_role(
@@ -49,24 +50,55 @@ function save_nom_handivlagch_role_change_date($user_id, $role) {
 }
 add_action('set_user_role', 'save_nom_handivlagch_role_change_date', 10, 2);
 
-function can_view_course($course_id) {
+// function can_view_course($course_id) {
+// 	$current_user = wp_get_current_user();
+// 	$role_assigned_date = get_user_meta($current_user->ID, 'nom_handivlagch_role_assigned_date', true);
+	
+// 	// Хичээлийн нийтэд нээлттэй болсон огноог авах
+// 	$course_publication_date = get_the_date('Y-m-d H:i:s', $course_id);
+
+// 	// Хэрэв хэрэглэгч 'ном_хандивлагч' үүрэгтэй бол
+// 	if (in_array('ном_хандивлагч', (array) $current_user->roles)) {
+// 			if ($role_assigned_date && $course_publication_date <= $role_assigned_date) {
+// 					// Хэрэв хичээлийг нийтэд нээлттэй болгосон огноо нь үүргийг авснаас өмнөх бол
+// 					return true;
+// 			} else {
+// 					// Хичээлийг үзэх боломжгүй бол
+// 					return false;
+// 			}
+// 	}
+
+// 	// Бусад бүх хэрэглэгчдэд хичээлийг үзэх боломжийг олгоно
+// 	return true;
+// }
+
+function can_access_lesson($lesson_id) {
+	// Get the current user
 	$current_user = wp_get_current_user();
+	
+	// Get the user's 'ном_хандивлагч' role assigned date
 	$role_assigned_date = get_user_meta($current_user->ID, 'nom_handivlagch_role_assigned_date', true);
 	
-	// Хичээлийн нийтэд нээлттэй болсон огноог авах
-	$course_publication_date = get_the_date('Y-m-d H:i:s', $course_id);
-
-	// Хэрэв хэрэглэгч 'ном_хандивлагч' үүрэгтэй бол
-	if (in_array('ном_хандивлагч', (array) $current_user->roles)) {
-			if ($role_assigned_date && $course_publication_date <= $role_assigned_date) {
-					// Хэрэв хичээлийг нийтэд нээлттэй болгосон огноо нь үүргийг авснаас өмнөх бол
-					return true;
-			} else {
-					// Хичээлийг үзэх боломжгүй бол
-					return false;
-			}
+	// If the user doesn't have the 'ном_хандивлагч' role or there's no assigned date, deny access
+	if (!$role_assigned_date || !in_array('ном_хандивлагч', (array) $current_user->roles)) {
+			return false;
 	}
-
-	// Бусад бүх хэрэглэгчдэд хичээлийг үзэх боломжийг олгоно
-	return true;
+	
+	// Get the publication date of the lesson
+	$lesson_publication_date = get_the_date('Y-m-d H:i:s', $lesson_id);
+	
+	// Allow access if the lesson was published before the role was assigned
+	return $lesson_publication_date <= $role_assigned_date;
 }
+
+
+// if (can_view_course(get_the_ID())) {
+//   // Хичээлийг харуулах
+//   the_content();
+//   // print_r($current_user);
+// } else {
+//     // Хичээлийг үзэх боломжгүй тухай мессеж харуулах
+//     echo 'Энэ хичээлд нэвтрэх боломжгүй.';
+// }
+
+?>
